@@ -245,22 +245,7 @@ class Foo
         ;
     }
 
-    public function nowdocSimpleA(): string
-    {
-        return <<<'EOF'
-            foo
-            EOF;
-    }
-
-    public function nowdocSimpleB(): string
-    {
-        return
-            <<<'EOF'
-                foo
-                EOF;
-    }
-
-    public function nowdocSimpleC(): string
+    public function nowdoc(): string
     {
         return
             <<<'EOF'
@@ -316,17 +301,8 @@ class Foo
             **
             2
             **
-            3;
-    }
-
-    public function complexAssociativityLeft(): int
-    {
-        return
-            1
-            >>
-            2
-            >>
-            3;
+            3
+        ;
     }
 
     public function complexAssociativityNa(): bool
@@ -335,7 +311,8 @@ class Foo
             !
             !
             !
-            false;
+            false
+        ;
     }
 
     public function complexTernary(): int
@@ -347,17 +324,8 @@ class Foo
                 ? 3
                 : 4
             )
-            : 5;
-    }
-
-    public function complexNullCoalescing(): int
-    {
-        return
-            null
-            ??
-            1
-            ??
-            null;
+            : 5
+        ;
     }
 
     public function constFromArray(): string
@@ -368,165 +336,38 @@ class Foo
             'ro',
             'fi',
             'omega',
-        ][2];
+        ]
+        [2]
+        ;
     }
 
     public function withNotConstInTheMiddle(): string
     {
         return
             ''
-            . ''
-            . phpversion()
-            . ''
-            . '';
+            .
+            ''
+            .
+            phpversion()
+            .
+            ''
+            .
+            ''
+        ;
     }
 
-    public function andA(): bool
+    public function multipleConcats(): string
     {
         return
-            true
-            && false;
-    }
-
-    public function andB(): bool
-    {
-        return
-            true
-            && true;
-    }
-
-    public function andC(): bool
-    {
-        return
-            false
-            && true;
-    }
-
-    public function andD(): bool
-    {
-        return
-            false
-            && false;
-    }
-
-    public function andE(): bool
-    {
-        return
-            __TRAIT__ // compile time constant evaluated to false
-            && 1
-            && 0;
-    }
-
-    public function andF(): bool
-    {
-        return
-            PHP_VERSION_ID // compile time constant evaluated to true
-            && 1
-            && 0;
-    }
-
-    public function orA(): bool
-    {
-        return
-            true
-            || false;
-    }
-
-    public function orB(): bool
-    {
-        return
-            true
-            || true;
-    }
-
-    public function orC(): bool
-    {
-        return
-            false
-            || true;
-    }
-
-    public function orD(): bool
-    {
-        return
-            false
-            || false;
-    }
-
-    public function orE(): bool
-    {
-        return
-            __TRAIT__
-            || true
-            || false;
-    }
-
-    public function orF(): bool
-    {
-        return
-            PHP_VERSION_ID
-            || true
-            || false;
-    }
-
-    public function orG(): bool
-    {
-        return
-            PHP_VERSION_ID === PHP_VERSION_ID
-            || true
-            || false;
-    }
-
-    public function orH(): bool
-    {
-        return
-            PHP_VERSION_ID !== PHP_VERSION_ID
-            || true
-            || false;
-    }
-
-    public function constIfFalseA(): bool
-    {
-        if (false) {
-            return true;
-        }
-
-        return false;
-    }
-
-    public function constIfFalseB(): bool
-    {
-        if (__TRAIT__) {
-            return true;
-        }
-
-        return false;
-    }
-
-    public function constIfTrueA(): bool
-    {
-        if (true) {
-            return true;
-        }
-
-        return false;
-    }
-
-    public function constIfTrueB(): bool
-    {
-        if (PHP_VERSION_ID) {
-            return true;
-        }
-
-        return false;
-    }
-
-    public function constIfUnknown(): bool
-    {
-        if (__NOT_EXPECTED_TO_BE_KNOWN_CONSTANT__) {
-            return true;
-        }
-
-        return false;
+            'a'
+            .
+            'b'
+            .
+            'c'
+            .
+            'd'
+            .
+            'e'
+        ;
     }
 }
