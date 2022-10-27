@@ -49,6 +49,7 @@ use PhpParser\Node\Stmt\Throw_;
 use PhpParser\Node\Stmt\TryCatch;
 use PhpParser\Node\Stmt\Unset_;
 use PhpParser\Node\Stmt\While_;
+use PhpParser\NodeAbstract;
 use PhpParser\NodeVisitorAbstract;
 
 /**
@@ -70,6 +71,11 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
      * @psalm-var array<int, Return_>
      */
     private $returns = [];
+
+    /**
+     * @psalm-var array<string, bool>
+     */
+    private $arrayDimFetchVars = [];
 
     public function enterNode(Node $node): void
     {
@@ -123,7 +129,7 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
             $line = $return->getEndLine();
 
             if ($return->expr !== null) {
-                $line = $return->expr->getStartLine();
+                $line = $this->getNodeStartLine($return->expr);
             }
 
             $this->executableLines[$line] = $line;
@@ -136,13 +142,6 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
     private function getLines(Node $node): array
     {
         if ($node instanceof BinaryOp) {
-            if (($node->left instanceof Node\Scalar ||
-                $node->left instanceof Node\Expr\ConstFetch) &&
-                ($node->right instanceof Node\Scalar ||
-                $node->right instanceof Node\Expr\ConstFetch)) {
-                return [$node->right->getStartLine()];
-            }
-
             return [];
         }
 
@@ -154,6 +153,8 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
         }
 
         if ($node instanceof ArrayDimFetch) {
+            $this->arrayDimFetchVars[spl_object_hash($node->var)] = true;
+
             if (null === $node->dim) {
                 return [];
             }
@@ -162,6 +163,10 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
         }
 
         if ($node instanceof Array_) {
+            if (isset($this->arrayDimFetchVars[spl_object_hash($node)])) {
+                return [];
+            }
+
             $startLine = $node->getStartLine();
 
             if (isset($this->executableLines[$startLine])) {
@@ -240,6 +245,29 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
         }
 
         return [$node->getStartLine()];
+    }
+
+    private function getNodeStartLine(NodeAbstract $node): int
+    {
+        if ($node instanceof Node\Expr\BooleanNot ||
+            $node instanceof Node\Expr\AssignOp\ShiftLeft ||
+            $node instanceof Node\Expr\AssignOp\ShiftRight
+        ) {
+            return $node->getEndLine();
+        }
+
+        if ($node instanceof BinaryOp) {
+            return $this->getNodeStartLine($node->right);
+        }
+
+        if ($node instanceof Node\Scalar\String_ && (
+            $node->getAttribute('kind') === Node\Scalar\String_::KIND_HEREDOC ||
+            $node->getAttribute('kind') === Node\Scalar\String_::KIND_NOWDOC
+        )) {
+            return $node->getStartLine() + 1;
+        }
+
+        return $node->getStartLine();
     }
 
     private function isExecutable(Node $node): bool
