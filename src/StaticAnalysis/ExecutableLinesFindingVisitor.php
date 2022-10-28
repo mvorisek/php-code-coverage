@@ -73,7 +73,7 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
     private $returns = [];
 
     /**
-     * @psalm-var array<string, bool>
+     * @psalm-var array<int, bool>
      */
     private $arrayDimFetchVars = [];
 
