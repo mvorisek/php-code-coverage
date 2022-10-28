@@ -370,4 +370,14 @@ class Foo
             'e'
         ;
     }
+
+    public function multilineHeredoc(): string
+    {
+        return <<<EOF
+a
+b
+c
+EOF;
+
+    }
 }
