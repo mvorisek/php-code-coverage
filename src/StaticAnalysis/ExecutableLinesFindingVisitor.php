@@ -153,7 +153,7 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
         }
 
         if ($node instanceof ArrayDimFetch) {
-            $this->arrayDimFetchVars[spl_object_hash($node->var)] = true;
+            $this->arrayDimFetchVars[spl_object_id($node->var)] = true;
 
             if (null === $node->dim) {
                 return [];
@@ -163,7 +163,7 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
         }
 
         if ($node instanceof Array_) {
-            if (isset($this->arrayDimFetchVars[spl_object_hash($node)])) {
+            if (isset($this->arrayDimFetchVars[spl_object_id($node)])) {
                 return [];
             }
 
