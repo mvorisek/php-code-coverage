@@ -12,15 +12,14 @@ namespace SebastianBergmann\CodeCoverage\StaticAnalysis;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\ArrayDimFetch;
-use PhpParser\Node\Expr\ArrayItem;
 use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\BinaryOp;
 use PhpParser\Node\Expr\CallLike;
-use PhpParser\Node\Expr\Cast;
 use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Expr\Match_;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\NullsafePropertyFetch;
+use PhpParser\Node\Expr\Print_;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Expr\Ternary;
@@ -49,6 +48,7 @@ use PhpParser\Node\Stmt\Throw_;
 use PhpParser\Node\Stmt\TryCatch;
 use PhpParser\Node\Stmt\Unset_;
 use PhpParser\Node\Stmt\While_;
+use PhpParser\NodeAbstract;
 use PhpParser\NodeVisitorAbstract;
 
 /**
@@ -67,12 +67,16 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
     private $propertyLines = [];
 
     /**
-     * @psalm-var array<int, Return_>
+     * @psalm-var array<int, Return_|Expression|Assign|Array_>
      */
     private $returns = [];
 
     public function enterNode(Node $node): void
     {
+        if (!$node instanceof NodeAbstract) {
+            return;
+        }
+
         $this->savePropertyLines($node);
 
         if (!$this->isExecutable($node)) {
@@ -102,28 +106,33 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
 
     private function savePropertyLines(Node $node): void
     {
-        if (!$node instanceof Property && !$node instanceof Node\Stmt\ClassConst) {
-            return;
-        }
-
-        foreach (range($node->getStartLine(), $node->getEndLine()) as $index) {
-            $this->propertyLines[$index] = $index;
+        if ($node instanceof Property) {
+            foreach (range($node->getStartLine(), $node->getEndLine()) as $index) {
+                $this->propertyLines[$index] = $index;
+            }
         }
     }
 
     private function computeReturns(): void
     {
-        foreach ($this->returns as $return) {
-            foreach (range($return->getStartLine(), $return->getEndLine()) as $loc) {
-                if (isset($this->executableLines[$loc])) {
+        foreach ($this->returns as $node) {
+            foreach (range($node->getStartLine(), $node->getEndLine()) as $index) {
+                if (isset($this->executableLines[$index])) {
                     continue 2;
                 }
             }
 
-            $line = $return->getEndLine();
-
-            if ($return->expr !== null) {
-                $line = $return->expr->getStartLine();
+            if ($node instanceof Return_) {
+                if ($node->expr === null) {
+                    $line = $node->getEndLine();
+                } else {
+                    $line = $this->getNodeStartLine($node->expr);
+                }
+            } elseif ($node instanceof Expression ||
+                $node instanceof Assign) {
+                $line = $this->getNodeStartLine($node->expr);
+            } else {
+                $line = $this->getNodeStartLine($node);
             }
 
             $this->executableLines[$line] = $line;
@@ -133,48 +142,29 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
     /**
      * @return int[]
      */
-    private function getLines(Node $node): array
+    private function getLines(NodeAbstract $node): array
     {
-        if ($node instanceof BinaryOp) {
-            if (($node->left instanceof Node\Scalar ||
-                $node->left instanceof Node\Expr\ConstFetch) &&
-                ($node->right instanceof Node\Scalar ||
-                $node->right instanceof Node\Expr\ConstFetch)) {
-                return [$node->right->getStartLine()];
-            }
+        if ($node instanceof Return_ ||
+            $node instanceof Expression ||
+            $node instanceof Assign ||
+            $node instanceof Array_) {
+            $this->returns[] = $node;
 
             return [];
         }
 
-        if ($node instanceof Cast ||
-            $node instanceof PropertyFetch ||
+        if ($node instanceof BinaryOp) {
+            return [];
+        }
+
+        if ($node instanceof PropertyFetch ||
             $node instanceof NullsafePropertyFetch ||
             $node instanceof StaticPropertyFetch) {
-            return [$node->getEndLine()];
+            return [$this->getNodeStartLine($node->name)];
         }
 
-        if ($node instanceof ArrayDimFetch) {
-            if (null === $node->dim) {
-                return [];
-            }
-
-            return [$node->dim->getStartLine()];
-        }
-
-        if ($node instanceof Array_) {
-            $startLine = $node->getStartLine();
-
-            if (isset($this->executableLines[$startLine])) {
-                return [];
-            }
-
-            if ([] === $node->items) {
-                return [$node->getEndLine()];
-            }
-
-            if ($node->items[0] instanceof ArrayItem) {
-                return [$node->items[0]->getStartLine()];
-            }
+        if ($node instanceof ArrayDimFetch && null !== $node->dim) {
+            return [$this->getNodeStartLine($node->dim)];
         }
 
         if ($node instanceof ClassMethod) {
@@ -202,56 +192,82 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
         }
 
         if ($node instanceof MethodCall) {
-            return [$node->name->getStartLine()];
+            return [$this->getNodeStartLine($node->name)];
         }
 
         if ($node instanceof Ternary) {
-            $lines = [$node->cond->getStartLine()];
+            $lines = [$this->getNodeStartLine($node->cond)];
 
             if (null !== $node->if) {
-                $lines[] = $node->if->getStartLine();
+                $lines[] = $this->getNodeStartLine($node->if);
             }
 
-            $lines[] = $node->else->getStartLine();
+            $lines[] = $this->getNodeStartLine($node->else);
 
             return $lines;
         }
 
         if ($node instanceof Match_) {
-            return [$node->cond->getStartLine()];
+            return [$this->getNodeStartLine($node->cond)];
         }
 
         if ($node instanceof MatchArm) {
-            return [$node->body->getStartLine()];
+            return [$this->getNodeStartLine($node->body)];
         }
 
-        if ($node instanceof Expression && (
-            $node->expr instanceof Cast ||
-            $node->expr instanceof Match_ ||
-            $node->expr instanceof MethodCall
+        // TODO this concept should be extended for every statement class like Foreach_
+        if ($node instanceof If_ ||
+            $node instanceof ElseIf_) {
+            return [$this->getNodeStartLine($node->cond)];
+        }
+
+        return [$this->getNodeStartLine($node)];
+    }
+
+    private function getNodeStartLine(NodeAbstract $node): int
+    {
+        if ($node instanceof Node\Expr\Cast ||
+            $node instanceof Node\Expr\BooleanNot ||
+            $node instanceof Node\Expr\UnaryMinus ||
+            $node instanceof Node\Expr\UnaryPlus
+        ) {
+            return $this->getNodeStartLine($node->expr);
+        }
+
+        if ($node instanceof BinaryOp) {
+            return $this->getNodeStartLine($node->right);
+        }
+
+        if ($node instanceof Node\Scalar\String_ && (
+            $node->getAttribute('kind') === Node\Scalar\String_::KIND_HEREDOC ||
+            $node->getAttribute('kind') === Node\Scalar\String_::KIND_NOWDOC
         )) {
-            return [];
+            return $node->getStartLine() + 1;
         }
 
-        if ($node instanceof Return_) {
-            $this->returns[] = $node;
+        if ($node instanceof Array_) {
+            if ([] === $node->items || $node->items[0] === null) {
+                return $node->getEndLine();
+            }
 
-            return [];
+            return $this->getNodeStartLine($node->items[0]);
         }
 
-        return [$node->getStartLine()];
+        if ($node instanceof Assign) {
+            return $this->getNodeStartLine($node->expr);
+        }
+
+        return $node->getStartLine(); // $node should be only a scalar here
     }
 
     private function isExecutable(Node $node): bool
     {
         return $node instanceof Assign ||
                $node instanceof ArrayDimFetch ||
-               $node instanceof Array_ ||
                $node instanceof BinaryOp ||
                $node instanceof Break_ ||
                $node instanceof CallLike ||
                $node instanceof Case_ ||
-               $node instanceof Cast ||
                $node instanceof Catch_ ||
                $node instanceof ClassMethod ||
                $node instanceof Closure ||
@@ -271,6 +287,7 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
                $node instanceof MatchArm ||
                $node instanceof MethodCall ||
                $node instanceof NullsafePropertyFetch ||
+               $node instanceof Print_ ||
                $node instanceof PropertyFetch ||
                $node instanceof Return_ ||
                $node instanceof StaticPropertyFetch ||
