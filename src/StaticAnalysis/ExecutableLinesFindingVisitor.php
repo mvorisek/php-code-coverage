@@ -23,7 +23,6 @@ use PhpParser\Node\Expr\Print_;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Expr\Ternary;
-use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\MatchArm;
 use PhpParser\Node\Scalar\Encapsed;
 use PhpParser\Node\Stmt\Break_;
@@ -297,7 +296,6 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
                $node instanceof Throw_ ||
                $node instanceof TryCatch ||
                $node instanceof Unset_ ||
-               $node instanceof Variable ||
                $node instanceof While_;
     }
 }

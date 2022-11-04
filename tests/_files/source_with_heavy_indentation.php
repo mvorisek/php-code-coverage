@@ -74,43 +74,6 @@ class Foo
         ], true);
     }
 
-    public function variable(): bool
-    {
-        $xa = $this->isOne();
-        $xb = $xb;
-        $xc = $xc;
-
-        $va
-            =
-        $vb
-            =
-        [
-            $xa,
-            $xb,
-            1
-            +
-            $xb
-            + 1,
-        ];
-
-        [
-            $v2,
-            $v3
-        ]
-        =
-        u(
-            $xa,
-            $xb,
-            1
-            +
-            $xc
-            +
-            1
-        );
-
-        return $v2 === $v3;
-    }
-
     private static $staticState = 1;
     private const CONST_STATE = 1.1;
 }
