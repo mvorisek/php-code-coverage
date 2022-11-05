@@ -355,7 +355,7 @@ final class RawCodeCoverageDataTest extends TestCase
                 94,
                 96,
                 108,
-                // array destruct element, must be present 109,
+                // array destruct element, should be present 109,
                 112,
                 122,
                 131,

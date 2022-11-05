@@ -140,7 +140,8 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
             $node instanceof Return_ ||
             $node instanceof Expression ||
             $node instanceof Assign ||
-            $node instanceof Array_)
+            $node instanceof Array_
+        )
         ) {
             $this->returns[] = $node;
 
@@ -150,12 +151,16 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
         if ($node instanceof Return_) {
             if ($node->expr === null) {
                 return [$node->getEndLine()];
-            } else {
-                return $this->getLines($node->expr, $fromReturns);
             }
-        } elseif ($node instanceof Expression) {
-                return $this->getLines($node->expr, $fromReturns);
-        } elseif ($node instanceof Assign) {
+
+            return $this->getLines($node->expr, $fromReturns);
+        }
+
+        if ($node instanceof Expression) {
+            return $this->getLines($node->expr, $fromReturns);
+        }
+
+        if ($node instanceof Assign) {
             return [$this->getNodeStartLine($node->var)];
         }
 
