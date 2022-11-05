@@ -83,7 +83,7 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
             return;
         }
 
-        foreach ($this->getLines($node) as $line) {
+        foreach ($this->getLines($node, false) as $line) {
             if (isset($this->propertyLines[$line])) {
                 return;
             }
@@ -92,15 +92,18 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
         }
     }
 
+    public function afterTraverse(array $nodes): void
+    {
+        $this->computeReturns();
+
+        sort($this->executableLines);
+    }
+
     /**
      * @psalm-return array<int, int>
      */
     public function executableLines(): array
     {
-        $this->computeReturns();
-
-        sort($this->executableLines);
-
         return $this->executableLines;
     }
 
@@ -118,39 +121,42 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
         foreach ($this->returns as $node) {
             foreach (range($node->getStartLine(), $node->getEndLine()) as $index) {
                 if (isset($this->executableLines[$index])) {
-                    continue 2;
+                    continue;
                 }
             }
 
-            if ($node instanceof Return_) {
-                if ($node->expr === null) {
-                    $line = $node->getEndLine();
-                } else {
-                    $line = $this->getNodeStartLine($node->expr);
-                }
-            } elseif ($node instanceof Expression ||
-                $node instanceof Assign) {
-                $line = $this->getNodeStartLine($node->expr);
-            } else {
-                $line = $this->getNodeStartLine($node);
+            foreach ($this->getLines($node, true) as $line) {
+                $this->executableLines[$line] = $line;
             }
-
-            $this->executableLines[$line] = $line;
         }
     }
 
     /**
      * @return int[]
      */
-    private function getLines(NodeAbstract $node): array
+    private function getLines(NodeAbstract $node, bool $fromReturns): array
     {
-        if ($node instanceof Return_ ||
+        if (!$fromReturns && (
+            $node instanceof Return_ ||
             $node instanceof Expression ||
             $node instanceof Assign ||
-            $node instanceof Array_) {
+            $node instanceof Array_)
+        ) {
             $this->returns[] = $node;
 
             return [];
+        }
+
+        if ($node instanceof Return_) {
+            if ($node->expr === null) {
+                return [$node->getEndLine()];
+            } else {
+                return $this->getLines($node->expr, $fromReturns);
+            }
+        } elseif ($node instanceof Expression) {
+                return [$this->getNodeStartLine($node->expr)];
+        } elseif ($node instanceof Assign) {
+            return [$this->getNodeStartLine($node->var)];
         }
 
         if ($node instanceof BinaryOp) {
