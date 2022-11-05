@@ -151,20 +151,7 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
             if ($node->expr === null) {
                 return [$node->getEndLine()];
             } else {
-                $res = $this->getLines($node->expr, $fromReturns);
-                if ([] === $res) {
-                    $hasExLine = false;
-                    foreach (range($node->getStartLine(), $node->getEndLine()) as $index) {
-                        if (isset($this->executableLines[$index])) {
-                            $hasExLine = true;
-                        }
-                    }
-                    if (!$hasExLine) {
-                        $res = [$node->getEndLine()];
-                    }
-                }
-
-                return $res;
+                return $this->getLines($node->expr, $fromReturns);
             }
         } elseif ($node instanceof Expression) {
                 return [$this->getNodeStartLine($node->expr)];
@@ -173,7 +160,7 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
         }
 
         if ($node instanceof BinaryOp) {
-            return [];
+            return $fromReturns ? $this->getLines($node->right, $fromReturns) : [];
         }
 
         if ($node instanceof PropertyFetch ||
