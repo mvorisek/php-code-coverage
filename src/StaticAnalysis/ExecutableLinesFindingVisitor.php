@@ -151,7 +151,20 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
             if ($node->expr === null) {
                 return [$node->getEndLine()];
             } else {
-                return $this->getLines($node->expr, $fromReturns);
+                $res = $this->getLines($node->expr, $fromReturns);
+                if ([] === $res) {
+                    $hasExLine = false;
+                    foreach (range($node->getStartLine(), $node->getEndLine()) as $index) {
+                        if (isset($this->executableLines[$index])) {
+                            $hasExLine = true;
+                        }
+                    }
+                    if (!$hasExLine) {
+                        $res = [$node->getEndLine()];
+                    }
+                }
+
+                return $res;
             }
         } elseif ($node instanceof Expression) {
                 return [$this->getNodeStartLine($node->expr)];

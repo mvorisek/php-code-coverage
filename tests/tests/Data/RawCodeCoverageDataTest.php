@@ -361,7 +361,7 @@ final class RawCodeCoverageDataTest extends TestCase
                 // function argument, must be present 102,
                 // function argument, must be present 106,
                 // function argument, must be present 108,
-                // return with non-executable binary op, must be present 111,
+                111,
                 120,
                 122,
                 124,
