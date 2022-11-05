@@ -154,7 +154,7 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
                 return $this->getLines($node->expr, $fromReturns);
             }
         } elseif ($node instanceof Expression) {
-                return [$this->getNodeStartLine($node->expr)];
+                return $this->getLines($node->expr, $fromReturns);
         } elseif ($node instanceof Assign) {
             return [$this->getNodeStartLine($node->var)];
         }

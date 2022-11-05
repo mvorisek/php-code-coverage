@@ -6,6 +6,17 @@ class Foo
 
     public function isOne(): bool
     {
+        $v1
+            =
+            1
+        ;
+
+        $v2
+            =
+            (bool)
+            1
+        ;
+
         $v3
             =
             (bool)
