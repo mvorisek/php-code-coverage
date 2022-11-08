@@ -396,7 +396,7 @@ EOF;
     public function unaryMinusWithNotConstInTheMiddle(): float
     {
         return -
-        (
+        (int) (
             ''
             .
             phpversion()
@@ -485,10 +485,30 @@ EOF;
     {
         return
             -
+            (int)
             <<<'EOF'
                 1.
                 2
                 EOF
         ;
+    }
+
+    public function concatWithVar(): string
+    {
+        $var1 = 'start';
+
+        $var1 =
+            'right'
+            .
+            $var1
+        ;
+
+        $var1 =
+            $var1
+            .
+            'left'
+        ;
+
+        return $var1;
     }
 }

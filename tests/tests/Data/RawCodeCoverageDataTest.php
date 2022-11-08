@@ -497,7 +497,13 @@ final class RawCodeCoverageDataTest extends TestCase
                 456,
                 466,
                 478,
-                489,
+                490,
+                498,
+                500,
+                503,
+                506,
+                509, // This is correct: not the line with the $var1, but the right operand of the Concat
+                512,
             ],
             array_keys(RawCodeCoverageData::fromUncoveredFile($file, new ParsingFileAnalyser(true, true))->lineCoverage()[$file])
         );
