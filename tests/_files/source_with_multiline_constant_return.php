@@ -515,4 +515,14 @@ EOF
 
         return $var1;
     }
+
+    public
+    function
+    emptyMethod
+    (
+    )
+    :
+    void
+    {
+    }
 }

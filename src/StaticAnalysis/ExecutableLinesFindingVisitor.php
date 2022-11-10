@@ -188,6 +188,10 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
 
         if ($node instanceof ClassMethod) {
             if ($node->name->name !== '__construct') {
+                if ($node->stmts === []) {
+                    return [$node->getEndLine()];
+                }
+
                 return [];
             }
 
