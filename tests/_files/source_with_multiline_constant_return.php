@@ -396,7 +396,7 @@ EOF;
     public function unaryMinusWithNotConstInTheMiddle(): float
     {
         return -
-        (int) (
+        (
             ''
             .
             phpversion()
