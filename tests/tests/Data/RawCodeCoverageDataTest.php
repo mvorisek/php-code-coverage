@@ -312,6 +312,7 @@ final class RawCodeCoverageDataTest extends TestCase
 
         $this->assertEquals(
             [
+                13,
                 19,
                 22,
                 26,
@@ -320,6 +321,7 @@ final class RawCodeCoverageDataTest extends TestCase
                 32,
                 33,
                 35,
+                40,
             ],
             array_keys(RawCodeCoverageData::fromUncoveredFile($file, new ParsingFileAnalyser(true, true))->lineCoverage()[$file])
         );

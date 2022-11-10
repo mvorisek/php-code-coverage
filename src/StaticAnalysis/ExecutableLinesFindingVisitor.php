@@ -39,6 +39,7 @@ use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\Finally_;
 use PhpParser\Node\Stmt\For_;
 use PhpParser\Node\Stmt\Foreach_;
+use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\Goto_;
 use PhpParser\Node\Stmt\If_;
 use PhpParser\Node\Stmt\Property;
@@ -244,6 +245,14 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
             return [$this->getNodeStartLine($node->cond)];
         }
 
+        if ($node instanceof Function_) {
+            if ($node->stmts === []) {
+                return [$node->getEndLine()];
+            }
+
+            return [];
+        }
+
         return [$this->getNodeStartLine($node)];
     }
 
@@ -304,6 +313,7 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
                $node instanceof Finally_ ||
                $node instanceof For_ ||
                $node instanceof Foreach_ ||
+               $node instanceof Function_ ||
                $node instanceof Goto_ ||
                $node instanceof If_ ||
                $node instanceof Match_ ||
