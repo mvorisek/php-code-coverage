@@ -170,7 +170,7 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
                     $node->left instanceof Node\Expr\Variable ||
                 $node->right instanceof Node\Expr\Variable
                 )) {
-                return [$node->right->getStartLine()];
+                return [$this->getNodeStartLine($node->right)];
             }
 
             return $fromReturns ? $this->getLines($node->right, $fromReturns) : [];

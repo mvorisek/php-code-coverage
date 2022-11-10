@@ -498,7 +498,9 @@ EOF;
         $var1 = 'start';
 
         $var1 =
-            'right'
+            <<<'EOF'
+right
+EOF
             .
             $var1
         ;
@@ -506,7 +508,9 @@ EOF;
         $var1 =
             $var1
             .
-            'left'
+            <<<'EOF'
+left
+EOF
         ;
 
         return $var1;
