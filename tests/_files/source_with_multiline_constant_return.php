@@ -381,7 +381,7 @@ EOF;
 
     }
 
-    public function unaryLogicalNotWithNotConstInTheMiddle(): string
+    public function unaryLogicalNotWithNotConstInTheMiddle(): bool
     {
         return !
         (
@@ -393,7 +393,7 @@ EOF;
         );
     }
 
-    public function unaryMinusWithNotConstInTheMiddle(): string
+    public function unaryMinusWithNotConstInTheMiddle(): float
     {
         return -
         (
@@ -417,7 +417,7 @@ EOF;
         );
     }
 
-    public function complexArrayWithNotConstInTheMiddle(): string
+    public function complexArrayWithNotConstInTheMiddle(): array
     {
         return [
             [
@@ -448,7 +448,7 @@ EOF;
             'foo',
             'bar',
             'ro',
-            'fi' => 'fi',
+            'fi' => 'fi_v',
             'omega',
         ]
         [
@@ -458,7 +458,7 @@ EOF;
         ;
     }
 
-    public function emptyArray(): string
+    public function emptyArray(): array
     {
         return
         (
@@ -481,13 +481,13 @@ EOF;
         ;
     }
 
-    public function unaryMinusNowdoc(): bool
+    public function unaryMinusNowdoc(): float
     {
         return
             -
             <<<'EOF'
-                foo
-                foo
+                1.
+                2
                 EOF
         ;
     }
