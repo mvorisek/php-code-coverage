@@ -565,4 +565,27 @@ EOF;
             ]
         ];
     }
+
+    public function concatWithVar(): string
+    {
+        $var1 = 'start';
+
+        $var1 =
+            <<<'EOF'
+right
+EOF
+            .
+            $var1
+        ;
+
+        $var1 =
+            $var1
+            .
+            <<<'EOF'
+left
+EOF
+        ;
+
+        return $var1;
+    }
 }

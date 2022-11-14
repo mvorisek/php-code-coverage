@@ -538,6 +538,12 @@ final class RawCodeCoverageDataTest extends TestCase
                 537,
                 549,
                 562,
+                571,
+                573,
+                578,
+                581,
+                585,
+                589,
             ],
             array_keys(RawCodeCoverageData::fromUncoveredFile($file, new ParsingFileAnalyser(true, true))->lineCoverage()[$file])
         );

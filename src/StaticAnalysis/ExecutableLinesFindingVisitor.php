@@ -204,6 +204,14 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
         }
 
         if ($node instanceof BinaryOp) {
+            if ($node instanceof BinaryOp\Concat &&
+                (
+                    $node->left instanceof Node\Expr\Variable ||
+                    $node->right instanceof Node\Expr\Variable
+                )) {
+                return [$this->getNodeStartLine($node->right)];
+            }
+
             return $fromReturns ? $this->getLines($node->right, $fromReturns) : [];
         }
 
