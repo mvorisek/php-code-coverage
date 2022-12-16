@@ -310,12 +310,8 @@ class MyClass
         try {
             ++$var;                         // +1
             throw
-            new                             // +2
+            new                             // +1
             \Exception()                    // 0
-            ;
-            $myex = new \Exception();       // +1
-            throw
-                $myex                       // +1
             ;
             ++$var;                         // +1
         } catch (\Exception $exception) {   // +1
