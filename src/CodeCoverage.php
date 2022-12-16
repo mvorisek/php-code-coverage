@@ -485,16 +485,9 @@ final class CodeCoverage
                 continue;
             }
 
-            $linesToBranchMap = $this->analyser()->executableLinesIn($filename);
-
             $data->keepLineCoverageDataOnlyForLines(
                 $filename,
-                array_keys($linesToBranchMap)
-            );
-
-            $data->markExecutableLineByBranch(
-                $filename,
-                $linesToBranchMap
+                $this->analyser()->executableLinesIn($filename)
             );
         }
     }
