@@ -156,7 +156,7 @@ final class ParsingFileAnalyser implements FileAnalyser
             $codeUnitFindingVisitor        = new CodeUnitFindingVisitor;
             $lineCountingVisitor           = new LineCountingVisitor($linesOfCode);
             $ignoredLinesFindingVisitor    = new IgnoredLinesFindingVisitor($this->useAnnotationsForIgnoringCode, $this->ignoreDeprecatedCode);
-            $executableLinesFindingVisitor = new ExecutableLinesFindingVisitor;
+            $executableLinesFindingVisitor = new ExecutableLinesFindingVisitor($source);
 
             $traverser->addVisitor(new NameResolver);
             $traverser->addVisitor(new ParentConnectingVisitor);
@@ -184,7 +184,7 @@ final class ParsingFileAnalyser implements FileAnalyser
         $this->classes[$filename]         = $codeUnitFindingVisitor->classes();
         $this->traits[$filename]          = $codeUnitFindingVisitor->traits();
         $this->functions[$filename]       = $codeUnitFindingVisitor->functions();
-        $this->executableLines[$filename] = $executableLinesFindingVisitor->executableLines();
+        $this->executableLines[$filename] = $executableLinesFindingVisitor->executableLinesGroupedByBranch();
         $this->ignoredLines[$filename]    = [];
 
         $this->findLinesIgnoredByLineBasedAnnotations($filename, $source, $this->useAnnotationsForIgnoringCode);
