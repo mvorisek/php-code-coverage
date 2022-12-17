@@ -52,7 +52,7 @@ final class ExecutableLinesFindingVisitorTest extends TestCase
             new Lexer
         );
         $nodes                         = $parser->parse($source);
-        $executableLinesFindingVisitor = new ExecutableLinesFindingVisitor($source);
+        $executableLinesFindingVisitor = new GroupLinesByBranchFindingVisitor($source);
 
         $traverser = new NodeTraverser;
         $traverser->addVisitor($executableLinesFindingVisitor);
